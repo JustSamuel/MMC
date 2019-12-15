@@ -1,9 +1,5 @@
 import processing.core.PApplet;
-import processing.core.PGraphics;
-import processing.core.*;
-import processing.data.*;
-import processing.event.*;
-import processing.opengl.*;
+import processing.core.PFont;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -14,6 +10,9 @@ import java.util.Iterator;
 public class MMC extends PApplet {
 
     AnimationScheduler scheduler;
+    DotAnimation dotAnimation;
+    ModuloAnimation moduloAnimation;
+    PFont font;
 
     public static void main(String[] args) {
         PApplet.main("MMC");
@@ -26,15 +25,29 @@ public class MMC extends PApplet {
     public void setup() {
         colorMode(HSB, 360, 100, 100);
         scheduler = AnimationScheduler.getInstance();
-        scheduler.addAnimation(new DotAnimation());
-        scheduler.addAnimation(new DotAnimation());
+        dotAnimation = new DotAnimation();
+        moduloAnimation = new ModuloAnimation();
+        scheduler.addAnimation(dotAnimation);
+        scheduler.addAnimation(moduloAnimation);
+        font = createFont("FiraSans-Regular.otf",24);
+        textFont(font);
     }
 
     public void draw() {
         background(0);
+        drawGUI();
         for (AbstractAnimation animation: scheduler.animations
              ) {
             animation.draw();
+        }
+    }
+
+    public void keyPressed() {
+        switch (key) {
+            case 'r':
+                dotAnimation.restart();
+                moduloAnimation.restart();
+                break;
         }
     }
 
@@ -85,7 +98,7 @@ public class MMC extends PApplet {
                     public boolean hasNext() {
                         boolean temp = true;
                         if (currentIndex > 0) {
-                            temp = arrayList.get(currentIndex - 1).isFinished();
+                            temp = arrayList.get(currentIndex - 1).allowNext;
                         }
                         return currentIndex  < currentSize && arrayList.get(currentIndex) != null && temp;
                     }
@@ -109,6 +122,8 @@ public class MMC extends PApplet {
 
         // Every animation begins unfinished
         public boolean isFinished = false;
+
+        public boolean allowNext = false;
 
         public void draw() {
             if (!isFinished) {
@@ -139,33 +154,89 @@ public class MMC extends PApplet {
 
     }
 
+    public void drawGUI() {
+        fill(0,0,100);
+        noStroke();
+        text("Multiplication : " + moduloAnimation.modulo,50,50);
+    }
 
-    public class DotAnimation extends AbstractAnimation {
-
-        private int radius = 0;
-        private int maxRadius = 200;
-        private int dotCount = 20;
+    public class ModuloAnimation extends AbstractAnimation {
+        public float modulo = 0;
 
         @Override
         public void animation() {
             super.animation();
-            int SIZE = 10;
-            for (int i = 0; i < dotCount; i++) {
-                float angle = (360 / dotCount) * i;
-                float x = (float) (displayWidth / 2.0) + cos(radians(angle)) * radius;
-                float y = (float) (displayHeight / 2.0) + sin(radians(angle)) * radius;
-                circle(x, y, 10);
+            for (int i = 0; i <= dotCount; i++) {
+                float target = (i * modulo) % dotCount;
+                float[] startC = getCircle(i, radius);
+                float[] targetC = getCircle(target, radius);
+                stroke((360 / dotCount) * i, 100, 100,90);
+                line(startC[0], startC[1], targetC[0], targetC[1]);
             }
         }
 
         @Override
         public void step() {
             super.step();
-            if (radius < maxRadius) {
-                radius++;
-            } else {
-                this.finished();
+            modulo += 0.01;
+        }
+
+        public void restart() {
+            modulo = 0;
+        }
+    }
+
+
+    public float[] getCircle(float i, float radius) {
+        float angle = (360 / dotCount) * i + angleOffset;
+        float x = (float) (displayWidth / 2.0) + cos(radians(angle)) * radius;
+        float y = (float) (displayHeight / 2.0) + sin(radians(angle)) * radius;
+        float[] result = {x, y};
+        return result;
+    }
+
+
+
+    static float MAX_RADIUS = 400;
+    float radius;
+    float angleOffset = 0;
+    float dotCount = 100;
+
+    public class DotAnimation extends AbstractAnimation {
+
+        private float maxRadius = MAX_RADIUS;
+        private float stepSize = 1;
+
+        @Override
+        public void animation() {
+            super.animation();
+            this.allowNext = true;
+            int SIZE = 10;
+            for (int i = 0; i <= dotCount; i++) {
+                float[] startC = getCircle(i, radius);
+                noStroke();
+                fill(0,0,100);
+                circle(startC[0], startC[1], 10);
             }
+        }
+
+        @Override
+        public void step() {
+            super.step();
+            angleOffset += 0.1;
+            if (radius < maxRadius) {
+                radius+= stepSize;
+                stepSize+= 0.1;
+            } else {
+                radius = maxRadius;
+                this.allowNext = true;
+            }
+        }
+
+        public void restart() {
+            this.isFinished = false;
+            radius = 0;
+            this.stepSize = 1;
         }
 
     }
