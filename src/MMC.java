@@ -9,14 +9,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
- * GUI for the Modulo Multiplication Circle
+ * MMC for the Modulo Multiplication Circle
  */
-public class GUI extends PApplet {
+public class MMC extends PApplet {
 
     AnimationScheduler scheduler;
 
     public static void main(String[] args) {
-        PApplet.main("GUI");
+        PApplet.main("MMC");
     }
 
     public void settings() {
@@ -43,41 +43,41 @@ public class GUI extends PApplet {
      */
     public static class AnimationScheduler {
         private static AnimationScheduler ourInstance = new AnimationScheduler();
-        AnimationList<GUI.AbstractAnimation> animations;
+        AnimationList<MMC.AbstractAnimation> animations;
 
         public static AnimationScheduler getInstance() {
             return ourInstance;
         }
 
         private AnimationScheduler() {
-            animations = new AnimationList<GUI.AbstractAnimation>();
+            animations = new AnimationList<MMC.AbstractAnimation>();
         }
 
-        public void addAnimation(GUI.AbstractAnimation animation) {
+        public void addAnimation(MMC.AbstractAnimation animation) {
             animations.addAnimation(animation);
         }
 
         /**
          * Custom iterator for the animations list
          */
-        public class AnimationList<AbstractAnimation> implements Iterable<GUI.AbstractAnimation> {
+        public class AnimationList<AbstractAnimation> implements Iterable<MMC.AbstractAnimation> {
 
-            private ArrayList<GUI.AbstractAnimation> arrayList;
+            private ArrayList<MMC.AbstractAnimation> arrayList;
             private int currentSize;
 
             public AnimationList() {
-                this.arrayList = new ArrayList<GUI.AbstractAnimation>();
+                this.arrayList = new ArrayList<MMC.AbstractAnimation>();
                 this.currentSize = arrayList.size();
             }
 
-            public void addAnimation(GUI.AbstractAnimation animation) {
+            public void addAnimation(MMC.AbstractAnimation animation) {
                 this.arrayList.add(animation);
                 this.currentSize = arrayList.size();
             }
 
             @Override
-            public Iterator<GUI.AbstractAnimation> iterator() {
-                Iterator<GUI.AbstractAnimation> it = new Iterator<>() {
+            public Iterator<MMC.AbstractAnimation> iterator() {
+                Iterator<MMC.AbstractAnimation> it = new Iterator<>() {
 
                     private int currentIndex = 0;
 
@@ -91,7 +91,7 @@ public class GUI extends PApplet {
                     }
 
                     @Override
-                    public GUI.AbstractAnimation next() {
+                    public MMC.AbstractAnimation next() {
                         return arrayList.get(currentIndex++);
                     }
 
